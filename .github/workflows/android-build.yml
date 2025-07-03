@@ -9,8 +9,8 @@ jobs:
   build-apk:
     runs-on: ubuntu-latest
     env:
-      ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
-      PATH: ${{ env.ANDROID_SDK_ROOT }}/cmdline-tools/latest/bin:${{ env.ANDROID_SDK_ROOT }}/platform-tools:${{ env.PATH }}
+      ANDROID_SDK_ROOT: $HOME/android-sdk
+      PATH: $HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$PATH
 
     steps:
     - name: Checkout code
@@ -23,20 +23,22 @@ jobs:
         java-version: '11'
         cache: gradle
 
-    - name: Install Android SDK command-line tools & packages
+    - name: Install Android SDK command-line tools
       run: |
         mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
         wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
         unzip cmdline-tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
         mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
 
+    - name: Accept licenses & install SDK packages
+      run: |
         yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
         sdkmanager --sdk_root=$ANDROID_SDK_ROOT \
           "platform-tools" \
           "build-tools;33.0.0" \
           "platforms;android-33"
 
-    - name: Grant execute permission for gradlew
+    - name: Make Gradle wrapper executable
       run: chmod +x ./gradlew
 
     - name: Build Debug APK
